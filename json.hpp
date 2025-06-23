@@ -22,6 +22,7 @@ class JSON {
         SUCCESS,
         END,
         DEPTH_EXCEEDED,
+        TRAILING_CONTENT,
         INVALID_KEY_TYPE,
         INVALID_NUMBER,
         INVALID_STRING_ESCAPE,
@@ -128,6 +129,8 @@ const char* JSON::status_string(Status status) {
             return "END";
         case DEPTH_EXCEEDED:
             return "DEPTH_EXCEEDED";
+        case TRAILING_CONTENT:
+            return "TRAILING_CONTENT";
         case INVALID_KEY_TYPE:
             return "INVALID_KEY_TYPE";
         case INVALID_NUMBER:
@@ -433,15 +436,16 @@ void JSON::clear() {
 bool JSON::parse(const std::string& src, Status* status) {
     const char* start = src.data();
     const char* end = src.data() + src.size();
-    Status result = decode(start, end, 0, 0);
-    if (result == SUCCESS) {
-        result = decode(start, end, 0, 0);
-        if (result == END)
-            result = SUCCESS;
+    Status s1 = decode(start, end, 0, 0);
+    if (s1 == SUCCESS) {
+        JSON j2;
+        Status s2 = j2.decode(start, end, 0, 0);
+        if (s2 != END)
+            s1 = TRAILING_CONTENT;
     }
     if (status != nullptr)
-        *status = result;
-    return result == SUCCESS;
+        *status = s1;
+    return s1 == SUCCESS;
 }
 
 std::string JSON::dump(bool pretty) const {
@@ -644,7 +648,7 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                     return UNEXPECTED_NUMBER;
                 if (std::isdigit(*start))
                     return INVALID_NUMBER;
-                if (*start == '.')
+                if (*start == '.' || *start == 'e' || *start == 'E')
                     goto decode_double;
                 type_ = TYPE_LONG;
                 as_long_ = 0;
@@ -663,29 +667,29 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_NUMBER;
                 for (const char* c = start; c < end; ++c) {
-                    if (*c == '.')
+                    if (*c == '.' || *c == 'e' || *c == 'E')
                         goto decode_double;
                     if (!std::isdigit(*c))
                         break;
                 }
-                char* end;
                 type_ = TYPE_LONG;
-                as_long_ = std::strtoll(start - 1, &end, 10) * sign;
-                if (end == start - 1)
+                std::from_chars_result result = std::from_chars(start - 1, end, as_long_);
+                if (result.ec != std::errc{})
                     return INVALID_NUMBER;
-                start = end;
+                as_long_ *= sign;
+                start = result.ptr;
                 return SUCCESS;
             } break;
 
             decode_double: {  // double
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_NUMBER;
-                char* end;
                 type_ = TYPE_DOUBLE;
-                as_double_ = std::strtod(start - 1, &end) * sign;
-                if (end == start - 1)
+                std::from_chars_result result = std::from_chars(start - 1, end, as_double_);
+                if (result.ec != std::errc{})
                     return INVALID_NUMBER;
-                start = end;
+                as_double_ *= sign;
+                start = result.ptr;
                 return SUCCESS;
             } break;
 
@@ -709,8 +713,13 @@ void JSON::encode(std::string& dst, bool pretty, int indent) const {
         } break;
         case TYPE_LONG: {
             char buf[64];
-            std::snprintf(buf, sizeof(buf), "%lld", as_long_);
-            dst += buf;
+            std::to_chars_result result = std::to_chars(buf, buf + sizeof(buf), as_long_);
+            if (result.ec == std::errc{}) {
+                dst.append(buf, result.ptr);
+            } else {
+                assert(false);
+                dst += "null";
+            }
         } break;
         case TYPE_DOUBLE: {
             char buf[128];

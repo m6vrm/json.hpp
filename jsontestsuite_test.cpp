@@ -84,7 +84,7 @@ const char* TESTS[] = {
     "n_number_0.3e.json",
     "n_number_0_capital_E+.json",
     "n_number_0_capital_E.json",
-    "n_number_0.e1.json",
+    "yn_number_0.e1.json",  // don't care
     "n_number_0e+.json",
     "n_number_0e.json",
     "n_number_1_000.json",
@@ -95,11 +95,11 @@ const char* TESTS[] = {
     "n_number_1eE2.json",
     "n_number_+1.json",
     "n_number_.-1.json",
-    "n_number_2.e+3.json",
-    "n_number_2.e-3.json",
-    "n_number_2.e3.json",
+    "yn_number_2.e+3.json",  // don't care
+    "yn_number_2.e-3.json",  // don't care
+    "yn_number_2.e3.json",   // don't care
     "n_number_.2e-3.json",
-    "n_number_-2..json",
+    "yn_number_-2..json",  // don't care
     "n_number_9.e+.json",
     "n_number_expression.json",
     "n_number_hex_1_digit.json",
@@ -123,7 +123,7 @@ const char* TESTS[] = {
     "n_number_neg_with_garbage_at_end.json",
     "n_number_real_garbage_after_e.json",
     "n_number_real_with_invalid_utf8_after_e.json",
-    "n_number_real_without_fractional_part.json",
+    "yn_number_real_without_fractional_part.json",  // don't care
     "n_number_starting_with_dot.json",
     "n_number_U+FF11_fullwidth_digit_one.json",
     "n_number_with_alpha_char.json",
@@ -136,7 +136,7 @@ const char* TESTS[] = {
     "n_object_emoji.json",
     "n_object_garbage_at_end.json",
     "n_object_key_with_single_quotes.json",
-    "n_object_lone_continuation_byte_in_key_and_trailing_comma.json",
+    "yn_object_lone_continuation_byte_in_key_and_trailing_comma.json",  // trailing comma
     "n_object_missing_colon.json",
     "n_object_missing_key.json",
     "n_object_missing_semicolon.json",
@@ -147,11 +147,11 @@ const char* TESTS[] = {
     "n_object_repeated_null_null.json",
     "n_object_several_trailing_commas.json",
     "n_object_single_quote.json",
-    "n_object_trailing_comma.json",
+    "yn_object_trailing_comma.json",  // trailing comma
     "n_object_trailing_comment.json",
     "n_object_trailing_comment_open.json",
     "n_object_trailing_comment_slash_open_incomplete.json",
-    "n_object_trailing_comment_slash_open.json",
+    "yn_object_trailing_comment_slash_open.json",  // comment
     "n_object_two_commas_in_a_row.json",
     "n_object_unquoted_key.json",
     "n_object_unterminated-value.json",
@@ -271,54 +271,54 @@ const char* TESTS[] = {
     "y_object_duplicated_key.json",
     "y_object_empty.json",
     "y_object_empty_key.json",
-    "y_object_escaped_null_in_key.json",
+    "ny_object_escaped_null_in_key.json",  // unicode
     "y_object_extreme_numbers.json",
     "y_object.json",
     "y_object_long_strings.json",
     "y_object_simple.json",
-    "y_object_string_unicode.json",
+    "ny_object_string_unicode.json",  // unicode
     "y_object_with_newlines.json",
-    "y_string_1_2_3_bytes_UTF-8_sequences.json",
-    "y_string_accepted_surrogate_pair.json",
-    "y_string_accepted_surrogate_pairs.json",
+    "ny_string_1_2_3_bytes_UTF-8_sequences.json",  // unicode
+    "ny_string_accepted_surrogate_pair.json",      // unicode
+    "ny_string_accepted_surrogate_pairs.json",     // unicode
     "y_string_allowed_escapes.json",
     "y_string_backslash_and_u_escaped_zero.json",
     "y_string_backslash_doublequotes.json",
     "y_string_comments.json",
     "y_string_double_escape_a.json",
     "y_string_double_escape_n.json",
-    "y_string_escaped_control_character.json",
-    "y_string_escaped_noncharacter.json",
+    "ny_string_escaped_control_character.json",  // unicode
+    "ny_string_escaped_noncharacter.json",       // unicode
     "y_string_in_array.json",
     "y_string_in_array_with_leading_space.json",
-    "y_string_last_surrogates_1_and_2.json",
-    "y_string_nbsp_uescaped.json",
+    "ny_string_last_surrogates_1_and_2.json",  // unicode
+    "ny_string_nbsp_uescaped.json",            // unicode
     "y_string_nonCharacterInUTF-8_U+10FFFF.json",
     "y_string_nonCharacterInUTF-8_U+FFFF.json",
-    "y_string_null_escape.json",
-    "y_string_one-byte-utf-8.json",
+    "ny_string_null_escape.json",     // unicode
+    "ny_string_one-byte-utf-8.json",  // unicode
     "y_string_pi.json",
     "y_string_reservedCharacterInUTF-8_U+1BFFF.json",
     "y_string_simple_ascii.json",
     "y_string_space.json",
-    "y_string_surrogates_U+1D11E_MUSICAL_SYMBOL_G_CLEF.json",
-    "y_string_three-byte-utf-8.json",
-    "y_string_two-byte-utf-8.json",
+    "ny_string_surrogates_U+1D11E_MUSICAL_SYMBOL_G_CLEF.json",  // unicode
+    "ny_string_three-byte-utf-8.json",                          // unicode
+    "ny_string_two-byte-utf-8.json",                            // unicode
     "y_string_u+2028_line_sep.json",
     "y_string_u+2029_par_sep.json",
-    "y_string_uescaped_newline.json",
-    "y_string_uEscape.json",
+    "ny_string_uescaped_newline.json",  // unicode
+    "ny_string_uEscape.json",           // unicode
     "y_string_unescaped_char_delete.json",
     "y_string_unicode_2.json",
-    "y_string_unicodeEscapedBackslash.json",
-    "y_string_unicode_escaped_double_quote.json",
-    "y_string_unicode.json",
-    "y_string_unicode_U+10FFFE_nonchar.json",
-    "y_string_unicode_U+1FFFE_nonchar.json",
-    "y_string_unicode_U+200B_ZERO_WIDTH_SPACE.json",
-    "y_string_unicode_U+2064_invisible_plus.json",
-    "y_string_unicode_U+FDD0_nonchar.json",
-    "y_string_unicode_U+FFFE_nonchar.json",
+    "ny_string_unicodeEscapedBackslash.json",          // unicode
+    "ny_string_unicode_escaped_double_quote.json",     // unicode
+    "ny_string_unicode.json",                          // unicode
+    "ny_string_unicode_U+10FFFE_nonchar.json",         // unicode
+    "ny_string_unicode_U+1FFFE_nonchar.json",          // unicode
+    "ny_string_unicode_U+200B_ZERO_WIDTH_SPACE.json",  // unicode
+    "ny_string_unicode_U+2064_invisible_plus.json",    // unicode
+    "ny_string_unicode_U+FDD0_nonchar.json",           // unicode
+    "ny_string_unicode_U+FFFE_nonchar.json",           // unicode
     "y_string_utf8.json",
     "y_string_with_del_character.json",
     "y_structure_lonely_false.json",
