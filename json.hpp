@@ -41,9 +41,14 @@ class JSON {
 
     static const char* status_string(Status status);
 
+    static JSON array();
+    static JSON object();
+
     JSON(const std::nullptr_t = nullptr);
     JSON(bool value);
+    JSON(int value);
     JSON(long long value);
+    JSON(float value);
     JSON(double value);
     JSON(const std::string& value);
     ~JSON();
@@ -56,23 +61,28 @@ class JSON {
     Type type() const;
 
     bool is_null() const;
-    bool as_bool() const;
-    long long as_long() const;
-    double as_double() const;
-    std::string& as_string();
-    std::vector<JSON>& as_array();
-    std::map<std::string, JSON>& as_object();
+    bool is_bool() const;
+    bool is_long() const;
+    bool is_double() const;
+    bool is_string() const;
+    bool is_array() const;
+    bool is_object() const;
 
-    bool has(std::size_t idx) const;
-    bool has(const std::string& key) const;
+    bool get_bool() const;
+    long long get_long() const;
+    double get_double() const;
+    std::string& get_string();
+    std::vector<JSON>& get_array();
+    std::map<std::string, JSON>& get_object();
 
     JSON& operator[](std::size_t idx);
     JSON& operator[](const std::string& key);
 
+    bool has(const std::string& key) const;
     void clear();
 
-    bool decode(const std::string& src, Status* status = nullptr);
-    void encode(std::string& dst, bool pretty = true) const;
+    bool parse(const std::string& src, Status* status = nullptr);
+    std::string dump(bool indent = false) const;
 
    private:
     void init_string();
@@ -102,7 +112,6 @@ class JSON {
 #include <cstdio>
 #include <cstring>
 #include <iterator>
-#include <system_error>
 #include <utility>
 
 #ifndef JSON_MAX_DEPTH
@@ -155,9 +164,23 @@ const char* JSON::status_string(Status status) {
     }
 }
 
+JSON JSON::array() {
+    JSON json;
+    json.init_array();
+    return json;
+}
+
+JSON JSON::object() {
+    JSON json;
+    json.init_object();
+    return json;
+}
+
 JSON::JSON(const std::nullptr_t) : type_{TYPE_NULL} {}
 JSON::JSON(bool value) : type_{TYPE_BOOL}, as_bool_{value} {}
+JSON::JSON(int value) : type_{TYPE_LONG}, as_long_{value} {}
 JSON::JSON(long long value) : type_{TYPE_LONG}, as_long_{value} {}
+JSON::JSON(float value) : type_{TYPE_DOUBLE}, as_double_{value} {}
 JSON::JSON(double value) : type_{TYPE_DOUBLE}, as_double_{value} {}
 JSON::JSON(const std::string& value) : type_{TYPE_STRING}, as_string_{value} {}
 
@@ -298,7 +321,31 @@ bool JSON::is_null() const {
     return type_ == TYPE_NULL;
 }
 
-bool JSON::as_bool() const {
+bool JSON::is_bool() const {
+    return type_ == TYPE_BOOL;
+}
+
+bool JSON::is_long() const {
+    return type_ == TYPE_LONG;
+}
+
+bool JSON::is_double() const {
+    return type_ == TYPE_DOUBLE;
+}
+
+bool JSON::is_string() const {
+    return type_ == TYPE_STRING;
+}
+
+bool JSON::is_array() const {
+    return type_ == TYPE_ARRAY;
+}
+
+bool JSON::is_object() const {
+    return type_ == TYPE_OBJECT;
+}
+
+bool JSON::get_bool() const {
     switch (type_) {
         case TYPE_BOOL:
             return as_bool_;
@@ -307,7 +354,7 @@ bool JSON::as_bool() const {
     }
 }
 
-long long JSON::as_long() const {
+long long JSON::get_long() const {
     switch (type_) {
         case TYPE_LONG:
             return as_long_;
@@ -318,7 +365,7 @@ long long JSON::as_long() const {
     }
 }
 
-double JSON::as_double() const {
+double JSON::get_double() const {
     switch (type_) {
         case TYPE_LONG:
             return as_long_;
@@ -329,34 +376,22 @@ double JSON::as_double() const {
     }
 }
 
-std::string& JSON::as_string() {
+std::string& JSON::get_string() {
     if (type_ != TYPE_STRING)
         init_string();
     return as_string_;
 }
 
-std::vector<JSON>& JSON::as_array() {
+std::vector<JSON>& JSON::get_array() {
     if (type_ != TYPE_ARRAY)
         init_array();
     return as_array_;
 }
 
-std::map<std::string, JSON>& JSON::as_object() {
+std::map<std::string, JSON>& JSON::get_object() {
     if (type_ != TYPE_OBJECT)
         init_object();
     return as_object_;
-}
-
-bool JSON::has(std::size_t idx) const {
-    if (type_ != TYPE_ARRAY)
-        return false;
-    return idx < as_array_.size();
-}
-
-bool JSON::has(const std::string& key) const {
-    if (type_ != TYPE_OBJECT)
-        return false;
-    return as_object_.find(key) != as_object_.end();
 }
 
 JSON& JSON::operator[](std::size_t idx) {
@@ -371,6 +406,12 @@ JSON& JSON::operator[](const std::string& key) {
     if (type_ != TYPE_OBJECT)
         init_object();
     return as_object_[key];
+}
+
+bool JSON::has(const std::string& key) const {
+    if (type_ != TYPE_OBJECT)
+        return false;
+    return as_object_.find(key) != as_object_.end();
 }
 
 void JSON::clear() {
@@ -389,7 +430,7 @@ void JSON::clear() {
     }
 }
 
-bool JSON::decode(const std::string& src, Status* status) {
+bool JSON::parse(const std::string& src, Status* status) {
     const char* start = src.data();
     const char* end = src.data() + src.size();
     Status internal_status = decode(start, end, 0, 0);
@@ -398,8 +439,10 @@ bool JSON::decode(const std::string& src, Status* status) {
     return internal_status == SUCCESS;
 }
 
-void JSON::encode(std::string& dst, bool pretty) const {
-    encode(dst, pretty, 1);
+std::string JSON::dump(bool pretty) const {
+    std::string string;
+    encode(string, pretty, 1);
+    return string;
 }
 
 void JSON::init_string() {
@@ -724,6 +767,7 @@ void JSON::encode(std::string& dst, bool pretty, int indent) const {
 }
 
 static void string_escape(std::string& dst, const std::string& src) {
+    dst.reserve(dst.size() + src.size());
     dst += "\"";
     for (char c : src) {
         switch (c) {
