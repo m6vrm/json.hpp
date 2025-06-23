@@ -433,10 +433,15 @@ void JSON::clear() {
 bool JSON::parse(const std::string& src, Status* status) {
     const char* start = src.data();
     const char* end = src.data() + src.size();
-    Status internal_status = decode(start, end, 0, 0);
+    Status result = decode(start, end, 0, 0);
+    if (result == SUCCESS) {
+        result = decode(start, end, 0, 0);
+        if (result == END)
+            result = SUCCESS;
+    }
     if (status != nullptr)
-        *status = internal_status;
-    return internal_status == SUCCESS;
+        *status = result;
+    return result == SUCCESS;
 }
 
 std::string JSON::dump(bool pretty) const {
