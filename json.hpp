@@ -42,8 +42,8 @@ class JSON {
 
     static const char* status_string(Status status);
 
-    static JSON array();
-    static JSON object();
+    static JSON array(const std::vector<JSON>& array = {});
+    static JSON object(const std::map<std::string, JSON>& object = {});
 
     JSON(const std::nullptr_t = nullptr);
     JSON(bool value);
@@ -51,6 +51,8 @@ class JSON {
     JSON(long long value);
     JSON(float value);
     JSON(double value);
+    JSON(const char* value);
+    JSON(std::string&& value);
     JSON(const std::string& value);
     ~JSON();
 
@@ -167,15 +169,17 @@ const char* JSON::status_string(Status status) {
     }
 }
 
-JSON JSON::array() {
+JSON JSON::array(const std::vector<JSON>& array) {
     JSON json;
     json.init_array();
+    json.as_array_ = std::move(array);
     return json;
 }
 
-JSON JSON::object() {
+JSON JSON::object(const std::map<std::string, JSON>& object) {
     JSON json;
     json.init_object();
+    json.as_object_ = std::move(object);
     return json;
 }
 
@@ -185,7 +189,9 @@ JSON::JSON(int value) : type_{TYPE_LONG}, as_long_{value} {}
 JSON::JSON(long long value) : type_{TYPE_LONG}, as_long_{value} {}
 JSON::JSON(float value) : type_{TYPE_DOUBLE}, as_double_{value} {}
 JSON::JSON(double value) : type_{TYPE_DOUBLE}, as_double_{value} {}
-JSON::JSON(const std::string& value) : type_{TYPE_STRING}, as_string_{value} {}
+JSON::JSON(const char* value) : type_{TYPE_STRING}, as_string_{value} {}
+JSON::JSON(std::string&& value) : type_{TYPE_STRING}, as_string_{std::move(value)} {}
+JSON::JSON(const std::string& value) : type_{TYPE_STRING}, as_string_{std::move(value)} {}
 
 JSON::~JSON() {
     clear();
@@ -498,7 +504,7 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
             case '/': {  // comment
                 if (*start++ != '/')
                     return INVALID_TOKEN;
-                while (*start != '\n' && *start != '\0')
+                while (*start != '\n' && start < end)
                     ++start;
             } break;
 
