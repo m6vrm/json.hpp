@@ -5,6 +5,7 @@
 #include <string>
 
 #define JSON_IMPLEMENTATION
+#define JSON_STRICT
 #include "json.hpp"
 
 #define COLOR_RESET "\033[0m"

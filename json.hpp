@@ -463,12 +463,14 @@ bool JSON::parse(const std::string& src, Status* status) {
     const char* start = src.data();
     const char* end = src.data() + src.size();
     Status s1 = decode(start, end, 0, 0);
+#ifdef JSON_STRICT
     if (s1 == SUCCESS) {
         JSON j2;
         Status s2 = j2.decode(start, end, 0, 0);
         if (s2 != END)
             s1 = TRAILING_CONTENT;
     }
+#endif  // JSON_STRICT
     if (status != nullptr)
         *status = s1;
     return s1 == SUCCESS;
@@ -501,6 +503,9 @@ void JSON::init_object() {
 JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::size_t depth) {
     assert(start <= end);
 
+    if (depth > JSON_MAX_DEPTH)
+        return DEPTH_EXCEEDED;
+
     enum {  // ctx, represents where we are and what to expect
         CTX_OBJECT = 1 << 1,
         CTX_ARRAY = 1 << 2,
@@ -508,9 +513,6 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
         CTX_COLON = 1 << 4,
         CTX_COMMA = 1 << 5,
     };
-
-    if (depth > JSON_MAX_DEPTH)
-        return DEPTH_EXCEEDED;
 
     int sign = +1;
     while (start < end) {
@@ -522,15 +524,19 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 break;
 
             case '/': {  // comment
+#ifdef JSON_STRICT
                 if (*start++ != '/')
                     return INVALID_TOKEN;
+#endif  // JSON_STRICT
                 while (*start != '\n' && start < end)
                     ++start;
             } break;
 
             case '{': {  // object
+#ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_OBJECT;
+#endif  // JSON_STRICT
                 init_object();
                 ctx = CTX_OBJECT | CTX_KEY;
                 JSON key, value;
@@ -550,13 +556,19 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 }
             } break;
             case '}':
+#ifdef JSON_STRICT
                 if (ctx & CTX_OBJECT)
                     return END;
                 return UNEXPECTED_OBJECT_END;
+#else   // JSON_STRICT
+                return END;
+#endif  // JSON_STRICT
 
             case '[': {  // array
+#ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_ARRAY;
+#endif  // JSON_STRICT
                 init_array();
                 ctx = CTX_ARRAY;
                 JSON value;
@@ -571,25 +583,35 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 }
             } break;
             case ']':
+#ifdef JSON_STRICT
                 if (ctx & CTX_ARRAY)
                     return END;
                 return UNEXPECTED_ARRAY_END;
+#else   // JSON_STRICT
+                return END;
+#endif  // JSON_STRICT
 
             case ',': {  // array or object
+#ifdef JSON_STRICT
                 if ((ctx & CTX_COMMA) == 0)
                     return UNEXPECTED_COMMA;
                 ctx &= ~CTX_COMMA;
+#endif  // JSON_STRICT
             } break;
 
             case ':': {  // object
+#ifdef JSON_STRICT
                 if ((ctx & CTX_COLON) == 0)
                     return UNEXPECTED_COLON;
                 ctx &= ~CTX_COLON;
+#endif  // JSON_STRICT
             } break;
 
             case '"': {  // string
+#ifdef JSON_STRICT
                 if (ctx & (CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_STRING;
+#endif  // JSON_STRICT
                 init_string();
                 while (start < end) {
                     switch (*start++) {
@@ -630,50 +652,63 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
             } break;
 
             case 't': {  // true
+#ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_TOKEN;
                 if (std::strncmp(start, "rue", 3) != 0)
                     return INVALID_TOKEN;
+#endif  // JSON_STRICT
                 start += 3;
+                start = start < end ? start : end;
                 type_ = TYPE_BOOL;
                 as_bool_ = true;
                 return SUCCESS;
             } break;
 
             case 'f': {  // false
+#ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_TOKEN;
                 if (std::strncmp(start, "alse", 4) != 0)
                     return INVALID_TOKEN;
+#endif  // JSON_STRICT
                 start += 4;
+                start = start < end ? start : end;
                 type_ = TYPE_BOOL;
                 as_bool_ = false;
                 return SUCCESS;
             } break;
 
             case 'n': {  // null
+#ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_TOKEN;
                 if (std::strncmp(start, "ull", 3) != 0)
                     return INVALID_TOKEN;
+#endif  // JSON_STRICT
                 start += 3;
+                start = start < end ? start : end;
                 type_ = TYPE_NULL;
                 return SUCCESS;
             } break;
 
             case '-': {  // negative
+#ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_TOKEN;
                 if (!std::isdigit(*start))
                     return UNEXPECTED_TOKEN;
+#endif  // JSON_STRICT
                 sign = -1;
             } break;
 
             case '0': {  // zero or double
+#ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_NUMBER;
                 if (std::isdigit(*start))
                     return INVALID_NUMBER;
+#endif  // JSON_STRICT
                 if (*start == '.' || *start == 'e' || *start == 'E')
                     goto decode_double;
                 type_ = TYPE_LONG;
@@ -690,8 +725,10 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
             case '7':
             case '8':
             case '9': {
+#ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_NUMBER;
+#endif  // JSON_STRICT
                 for (const char* c = start; c < end; ++c) {
                     if (*c == '.' || *c == 'e' || *c == 'E')
                         goto decode_double;
@@ -700,20 +737,26 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 }
                 type_ = TYPE_LONG;
                 std::from_chars_result result = std::from_chars(start - 1, end, as_long_);
+#ifdef JSON_STRICT
                 if (result.ec != std::errc{})
                     return INVALID_NUMBER;
+#endif  // JSON_STRICT
                 as_long_ *= sign;
                 start = result.ptr;
                 return SUCCESS;
             } break;
 
             decode_double: {  // double
+#ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_NUMBER;
+#endif  // JSON_STRICT
                 type_ = TYPE_DOUBLE;
                 std::from_chars_result result = std::from_chars(start - 1, end, as_double_);
+#ifdef JSON_STRICT
                 if (result.ec != std::errc{})
                     return INVALID_NUMBER;
+#endif  // JSON_STRICT
                 as_double_ *= sign;
                 start = result.ptr;
                 return SUCCESS;
@@ -724,9 +767,11 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
         }
     }
 
-    if (depth == 0)
-        return END;
-    return UNEXPECTED_END;
+#ifdef JSON_STRICT
+    if (depth > 0)
+        return UNEXPECTED_END;
+#endif  // JSON_STRICT
+    return END;
 }
 
 void JSON::encode(std::string& dst, bool pretty, int indent) const {
@@ -740,22 +785,12 @@ void JSON::encode(std::string& dst, bool pretty, int indent) const {
         case TYPE_LONG: {
             char buf[64];
             std::to_chars_result result = std::to_chars(buf, buf + sizeof(buf), as_long_);
-            if (result.ec == std::errc{}) {
-                dst.append(buf, result.ptr);
-            } else {
-                assert(false);
-                dst += "null";
-            }
+            dst.append(buf, result.ptr);
         } break;
         case TYPE_DOUBLE: {
             char buf[128];
             std::to_chars_result result = std::to_chars(buf, buf + sizeof(buf), as_double_);
-            if (result.ec == std::errc{}) {
-                dst.append(buf, result.ptr);
-            } else {
-                assert(false);
-                dst += "null";
-            }
+            dst.append(buf, result.ptr);
         } break;
         case TYPE_STRING: {
             string_escape(dst, as_string_);
