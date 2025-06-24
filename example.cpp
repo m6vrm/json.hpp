@@ -33,8 +33,23 @@ int main() {
     assert(success);
     std::cout << JSON::status_string(status) << std::endl;
 
-    // dump to string
-    std::cout << json1.dump(true) << std::endl;
+    // get values
+    assert(json1["null"].is_null());
+    assert(json1["bool"].get_bool() == true);
+    assert(json1["long"].get_long() == -69);
+    assert(json1["double"].get_double() == -1.42);
+    assert(json1["string"].get_string() == "value");
+
+    assert(json1["array"].empty() == false);
+    assert(json1["array"].size() == 5);
+    assert(json1["array"][0].is_null());
+    assert(json1["array"][1].is_bool());
+    assert(json1["array"][2].is_long());
+    assert(json1["array"][3].is_double());
+    assert(json1["array"][4].is_string());
+
+    assert(json1["empty_array"].empty());
+    assert(json1.has("object"));
 
     // create JSON
     JSON json2;
@@ -59,6 +74,5 @@ int main() {
     std::cout << json2.dump(true) << std::endl;
 
     assert(json1.dump() == json2.dump());
-
     return 0;
 }

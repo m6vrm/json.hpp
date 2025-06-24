@@ -81,7 +81,10 @@ class JSON {
     JSON& operator[](std::size_t idx);
     JSON& operator[](const std::string& key);
 
+    std::size_t size() const;
+    bool empty() const;
     bool has(const std::string& key) const;
+
     void clear();
 
     bool parse(const std::string& src, Status* status = nullptr);
@@ -415,6 +418,23 @@ JSON& JSON::operator[](const std::string& key) {
     if (type_ != TYPE_OBJECT)
         init_object();
     return as_object_[key];
+}
+
+std::size_t JSON::size() const {
+    switch (type_) {
+        case TYPE_STRING:
+            return as_string_.size();
+        case TYPE_ARRAY:
+            return as_array_.size();
+        case TYPE_OBJECT:
+            return as_object_.size();
+        default:
+            return 0;
+    }
+}
+
+bool JSON::empty() const {
+    return size() == 0;
 }
 
 bool JSON::has(const std::string& key) const {

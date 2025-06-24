@@ -390,8 +390,12 @@ int main() {
         std::printf("\n");
     }
 
-    if (failures > 0)
-        std::printf("\nfailed: %s%d%s\n", COLOR_BAD, failures, COLOR_RESET);
+    if (failures > 0) {
+        std::printf("failed: %s%d%s\n", COLOR_BAD, failures, COLOR_RESET);
+    } else {
+        std::printf("success\n");
+    }
+
     return failures;
 }
 

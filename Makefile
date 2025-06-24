@@ -1,11 +1,11 @@
 .PHONY: test
-test: json_test jsontestsuite_test
-	./json_test
+test: jsontestsuite_test json_test
 	./jsontestsuite_test
+	./json_test
 
 clean:
-	$(RM) json_test
 	$(RM) jsontestsuite_test
+	$(RM) json_test
 	$(RM) example
 
 .PHONY: format
