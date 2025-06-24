@@ -352,38 +352,36 @@ int main() {
         switch (TESTS[i][0]) {
             case 'y': {
                 if (success) {
-                    color = COLOR_GOOD;
-                    reason = "Y";
+                    color = TESTS[i][1] != 'n' ? COLOR_GOOD : COLOR_OK;
+                    reason = "PASS";
                 } else {
                     color = COLOR_BAD;
-                    reason = "N";
+                    reason = "SHOULD_PASS";
                     ++failures;
                 }
             } break;
             case 'n': {
                 if (!success) {
-                    color = COLOR_GOOD;
-                    reason = "N";
+                    color = TESTS[i][1] != 'y' ? COLOR_GOOD : COLOR_OK;
+                    reason = "FAIL";
                 } else {
                     color = COLOR_BAD;
-                    reason = "Y";
+                    reason = "SHOULD_FAIL";
                     ++failures;
                 }
             } break;
             case 'i': {
                 color = COLOR_GOOD;
                 if (success) {
-                    reason = "Y";
+                    reason = "PASS";
                 } else {
-                    reason = "N";
+                    reason = "FAIL";
                 }
             } break;
             default:
                 assert(false);
         }
 
-        if (TESTS[i][1] != '_')
-            color = COLOR_OK;
         std::printf("%-70s %s%s%s", TESTS[i], color, reason, COLOR_RESET);
         if (!success)
             std::printf(" (%s)", JSON::status_string(status));
