@@ -3,7 +3,9 @@
 #include <string>
 
 #define JSON_IMPLEMENTATION
+#define JSON_STRICT
 #include "json.hpp"
+
 int main() {
     // parse JSON
     JSON::Status status;  // status is optional
