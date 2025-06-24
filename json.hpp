@@ -22,11 +22,13 @@ class JSON {
         SUCCESS,
         END,
         DEPTH_EXCEEDED,
-        TRAILING_CONTENT,
         INVALID_KEY_TYPE,
-        INVALID_NUMBER,
         INVALID_STRING_ESCAPE,
         INVALID_TOKEN,
+        UNEXPECTED_STRING_END,
+#ifdef JSON_STRICT
+        INVALID_NUMBER,
+        TRAILING_CONTENT,
         UNEXPECTED_ARRAY,
         UNEXPECTED_ARRAY_END,
         UNEXPECTED_COLON,
@@ -36,8 +38,8 @@ class JSON {
         UNEXPECTED_OBJECT,
         UNEXPECTED_OBJECT_END,
         UNEXPECTED_STRING,
-        UNEXPECTED_STRING_END,
         UNEXPECTED_TOKEN,
+#endif  // JSON_STRICT
     };
 
     static const char* status_string(Status status);
@@ -134,16 +136,19 @@ const char* JSON::status_string(Status status) {
             return "END";
         case DEPTH_EXCEEDED:
             return "DEPTH_EXCEEDED";
-        case TRAILING_CONTENT:
-            return "TRAILING_CONTENT";
         case INVALID_KEY_TYPE:
             return "INVALID_KEY_TYPE";
-        case INVALID_NUMBER:
-            return "INVALID_NUMBER";
         case INVALID_STRING_ESCAPE:
             return "INVALID_STRING_ESCAPE";
         case INVALID_TOKEN:
             return "INVALID_TOKEN";
+        case UNEXPECTED_STRING_END:
+            return "UNEXPECTED_STRING_END";
+#ifdef JSON_STRICT
+        case INVALID_NUMBER:
+            return "INVALID_NUMBER";
+        case TRAILING_CONTENT:
+            return "TRAILING_CONTENT";
         case UNEXPECTED_ARRAY:
             return "UNEXPECTED_ARRAY";
         case UNEXPECTED_ARRAY_END:
@@ -162,13 +167,12 @@ const char* JSON::status_string(Status status) {
             return "UNEXPECTED_OBJECT_END";
         case UNEXPECTED_STRING:
             return "UNEXPECTED_STRING";
-        case UNEXPECTED_STRING_END:
-            return "UNEXPECTED_STRING_END";
         case UNEXPECTED_TOKEN:
             return "UNEXPECTED_TOKEN";
+#endif  // JSON_STRICT
         default:
             assert(false);
-            return "";
+            return "UNKNOWN_STATUS";
     }
 }
 
