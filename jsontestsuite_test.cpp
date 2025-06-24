@@ -371,7 +371,7 @@ int main() {
                 }
             } break;
             case 'i': {
-                color = COLOR_OK;
+                color = COLOR_GOOD;
                 if (success) {
                     reason = "Y";
                 } else {
