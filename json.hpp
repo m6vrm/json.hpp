@@ -739,14 +739,14 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                     if (!std::isdigit(*c))
                         break;
                 }
+                char* end;
                 type_ = TYPE_LONG;
-                std::from_chars_result result = std::from_chars(start - 1, end, as_long_);
+                as_long_ = std::strtoll(start - 1, &end, 10) * sign;
 #ifdef JSON_STRICT
-                if (result.ec != std::errc{})
+                if (end == start - 1)
                     return INVALID_NUMBER;
 #endif  // JSON_STRICT
-                as_long_ *= sign;
-                start = result.ptr;
+                start = end;
                 return SUCCESS;
             } break;
 
@@ -755,14 +755,14 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_NUMBER;
 #endif  // JSON_STRICT
+                char* end;
                 type_ = TYPE_DOUBLE;
-                std::from_chars_result result = std::from_chars(start - 1, end, as_double_);
+                as_double_ = std::strtod(start - 1, &end) * sign;
 #ifdef JSON_STRICT
-                if (result.ec != std::errc{})
+                if (end == start - 1)
                     return INVALID_NUMBER;
 #endif  // JSON_STRICT
-                as_double_ *= sign;
-                start = result.ptr;
+                start = end;
                 return SUCCESS;
             } break;
 
