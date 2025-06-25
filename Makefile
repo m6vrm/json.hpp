@@ -13,10 +13,10 @@ format:
 	clang-format -i json.hpp json_test.cpp jsontestsuite_test.cpp example.cpp
 
 json_test: json_test.cpp json.hpp
-	c++ -o $@ $< -Wall -Wextra -Wpedantic -std=c++20 -fsanitize=address,undefined -g3
+	c++ -o $@ $< -std=c++20 -Wall -Wextra -Wpedantic -g3 -fsanitize=address,undefined
 
 jsontestsuite_test: jsontestsuite_test.cpp json.hpp
-	c++ -o $@ $< -Wall -Wextra -Wpedantic -std=c++20 -fsanitize=address,undefined -g3
+	c++ -o $@ $< -std=c++20 -Wall -Wextra -Wpedantic -g3 -fsanitize=address,undefined
 
 example: example.cpp json.hpp
-	c++ -o $@ $< -Wall -Wextra -Wpedantic -std=c++20 -fsanitize=address,undefined -g3
+	c++ -o $@ $< -std=c++20 -Wall -Wextra -Wpedantic -g3 -fsanitize=address,undefined
