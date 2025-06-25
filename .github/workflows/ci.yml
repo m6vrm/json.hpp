@@ -3,26 +3,26 @@ name: CI
 on:
   push:
     branches:
-      - master
+    - master
   pull_request:
     branches:
-      - master
+    - master
 
 jobs:
   build:
     strategy:
       matrix:
         os:
-          - name: ubuntu-latest
-            cxx: c++
-          - name: macos-latest
-            cxx: c++
-          - name: windows-latest
-            cxx: clang++
+        - name: ubuntu-latest
+          cxx: c++
+        - name: macos-latest
+          cxx: c++
+        - name: windows-latest
+          cxx: clang++
         build:
-          - jsontestsuite_test
-          - json_test
-          - example
+        - jsontestsuite_test
+        - json_test
+        - example
     runs-on: ${{ matrix.os.name }}
     steps:
     - uses: actions/checkout@v4
