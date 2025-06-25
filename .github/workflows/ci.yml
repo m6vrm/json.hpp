@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - name: ubuntu-latest
+            cxx: c++
+          - name: macos-latest
+            cxx: c++
+          - name: windows-latest
+            cxx: clang++
+        build:
+          - jsontestsuite_test
+          - json_test
+          - example
+    runs-on: ${{ matrix.os.name }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: build
+      run: ${{ matrix.os.cxx }} -o ${{ matrix.build }} ${{ matrix.build }}.cpp -std=c++20 -Wall -Wextra -Wpedantic -g3 -fsanitize=address,undefined
+    - name: run
+      run: ${{ matrix.build }}
