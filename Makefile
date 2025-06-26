@@ -3,6 +3,7 @@ test: jsontestsuite_test json_test
 	./jsontestsuite_test
 	./json_test
 
+.PHONY: clean
 clean:
 	$(RM) jsontestsuite_test
 	$(RM) json_test
