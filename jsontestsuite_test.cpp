@@ -407,8 +407,12 @@ static std::string read(const char* path) {
 
     std::string string;
     char buf[1024];
-    while (std::size_t n = std::fread(buf, 1, sizeof(buf), file))
+    while (!std::feof(file) && !std::ferror(file)) {
+        std::size_t n = std::fread(buf, 1, sizeof(buf), file);
+        if (n == 0)
+            break;
         string.append(buf, n);
+    }
 
     std::fclose(file);
     return string;
