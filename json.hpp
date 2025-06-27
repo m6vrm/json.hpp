@@ -1,5 +1,6 @@
 // https://github.com/m6vrm/json.hpp
-#pragma once
+#ifndef JSON_HPP
+#define JSON_HPP
 
 #include <cstddef>
 #include <map>
@@ -110,6 +111,8 @@ class JSON {
         std::map<std::string, JSON> as_object_;
     };
 };
+
+#endif  // JSON_HPP
 
 #ifdef JSON_IMPLEMENTATION
 
