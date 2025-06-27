@@ -406,9 +406,9 @@ static std::string read(const char* path) {
     }
 
     std::string string;
-    int c;
-    while ((c = std::fgetc(file)) != EOF)
-        string += c;
+    char buf[1024];
+    while (std::size_t n = std::fread(buf, 1, sizeof(buf), file))
+        string.append(buf, n);
 
     std::fclose(file);
     return string;
