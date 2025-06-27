@@ -74,12 +74,12 @@ class JSON {
     bool is_array() const;
     bool is_object() const;
 
-    bool get_bool() const;
-    long long get_long() const;
-    double get_double() const;
-    std::string& get_string();
-    std::vector<JSON>& get_array();
-    std::map<std::string, JSON>& get_object();
+    bool get_bool(bool fallback = {}) const;
+    long long get_long(long long fallback = {}) const;
+    double get_double(double fallback = {}) const;
+    std::string& get_string(const std::string& fallback = {});
+    std::vector<JSON>& get_array(const std::vector<JSON>& fallback = {});
+    std::map<std::string, JSON>& get_object(const std::map<std::string, JSON>& fallback = {});
 
     JSON& operator[](std::size_t idx);
     JSON& operator[](const std::string& key);
@@ -364,52 +364,61 @@ bool JSON::is_object() const {
     return type_ == TYPE_OBJECT;
 }
 
-bool JSON::get_bool() const {
+bool JSON::get_bool(bool fallback) const {
     switch (type_) {
         case TYPE_BOOL:
             return as_bool_;
         default:
-            return false;
+            return fallback;
     }
 }
 
-long long JSON::get_long() const {
+long long JSON::get_long(long long fallback) const {
     switch (type_) {
         case TYPE_LONG:
             return as_long_;
         case TYPE_DOUBLE:
             return as_double_;
         default:
-            return 0;
+            return fallback;
     }
 }
 
-double JSON::get_double() const {
+double JSON::get_double(double fallback) const {
     switch (type_) {
         case TYPE_LONG:
             return as_long_;
         case TYPE_DOUBLE:
             return as_double_;
         default:
-            return 0;
+            return fallback;
     }
 }
 
-std::string& JSON::get_string() {
-    if (type_ != TYPE_STRING)
+std::string& JSON::get_string(const std::string& fallback) {
+    if (type_ != TYPE_STRING) {
         init_string();
+        as_string_ = std::move(fallback);
+    }
+
     return as_string_;
 }
 
-std::vector<JSON>& JSON::get_array() {
-    if (type_ != TYPE_ARRAY)
+std::vector<JSON>& JSON::get_array(const std::vector<JSON>& fallback) {
+    if (type_ != TYPE_ARRAY) {
         init_array();
+        as_array_ = std::move(fallback);
+    }
+
     return as_array_;
 }
 
-std::map<std::string, JSON>& JSON::get_object() {
-    if (type_ != TYPE_OBJECT)
+std::map<std::string, JSON>& JSON::get_object(const std::map<std::string, JSON>& fallback) {
+    if (type_ != TYPE_OBJECT) {
         init_object();
+        as_object_ = std::move(fallback);
+    }
+
     return as_object_;
 }
 

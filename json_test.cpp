@@ -238,6 +238,16 @@ int main() {
         std::printf("success\n");
     }
 
+    {
+        std::printf("fallback: ");
+        JSON json;
+        assert(json.get_bool(true) == true);
+        assert(json.get_long(-69) == -69);
+        assert(json.get_double(-1.42) == -1.42);
+        assert(json.get_string("value") == "value");
+        std::printf("success\n");
+    }
+
     std::printf("success\n");
     return 0;
 }
