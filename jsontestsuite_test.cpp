@@ -340,7 +340,7 @@ int main() {
     int failures = 0;
 
     char path[128];
-    for (std::size_t i = 0; i < sizeof(TESTS) / sizeof(*TESTS); ++i) {
+    for (size_t i = 0; i < sizeof(TESTS) / sizeof(*TESTS); ++i) {
         std::snprintf(path, sizeof(path), "JSONTestSuite/test_parsing/%s", TESTS[i]);
         std::string json_string = read(path);
 
@@ -408,7 +408,7 @@ static std::string read(const char* path) {
     std::string string;
     char buf[1024];
     while (!std::feof(file) && !std::ferror(file)) {
-        std::size_t n = std::fread(buf, 1, sizeof(buf), file);
+        size_t n = std::fread(buf, 1, sizeof(buf), file);
         if (n == 0)
             break;
         string.append(buf, n);

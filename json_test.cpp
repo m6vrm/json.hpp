@@ -74,13 +74,13 @@ int main() {
     }
 
     {
-        std::printf("long: ");
+        std::printf("int64: ");
         JSON json;
         std::string string = "-69";
         assert(json.parse(string, &status) == true);
         assert(status == JSON::SUCCESS);
-        assert(json.is_long());
-        assert(json.get_long() == -69);
+        assert(json.is_int64());
+        assert(json.get_int64() == -69);
         assert(json.dump() == string);
         std::printf("success\n");
     }
@@ -130,7 +130,7 @@ int main() {
         assert(json.is_array());
         assert(json.empty() == false);
         assert(json.size() == 1);
-        assert(json[0].get_long() == -69);
+        assert(json[0].get_int64() == -69);
         std::printf("success\n");
     }
 
@@ -146,7 +146,7 @@ int main() {
         assert(json[0].is_null());
         assert(json[1].get_bool() == true);
         assert(json[2].get_bool() == false);
-        assert(json[3].get_long() == -69);
+        assert(json[3].get_int64() == -69);
         assert(json[4].get_double() == 1.42);
         assert(json[5].get_string() == "hello world");
         assert(json[6].is_array());
@@ -190,14 +190,14 @@ int main() {
               // comments are ignored
               "null": null,
               "bool": true,
-              "long": -69,
+              "int64": -69,
               "double": -1.42,
               "string": "value",
               "array": [null, true, -69, -1.42, "value"],
               "object": {
                 "null": null,
                 "bool": true,
-                "long": -69,
+                "int64": -69,
                 "double": -1.42,
                 "string": "value"
               },
@@ -211,7 +211,7 @@ int main() {
 
         assert(json["null"].is_null());
         assert(json["bool"].get_bool() == true);
-        assert(json["long"].get_long() == -69);
+        assert(json["int64"].get_int64() == -69);
         assert(json["double"].get_double() == -1.42);
         assert(json["string"].get_string() == "value");
 
@@ -220,7 +220,7 @@ int main() {
         assert(json["array"].size() == 5);
         assert(json["array"][0].is_null());
         assert(json["array"][1].is_bool());
-        assert(json["array"][2].is_long());
+        assert(json["array"][2].is_int64());
         assert(json["array"][3].is_double());
         assert(json["array"][4].is_string());
 
@@ -229,7 +229,7 @@ int main() {
         assert(json["object"].size() == 5);
         assert(json["object"]["null"].is_null());
         assert(json["object"]["bool"].get_bool() == true);
-        assert(json["object"]["long"].get_long() == -69);
+        assert(json["object"]["int64"].get_int64() == -69);
         assert(json["object"]["double"].get_double() == -1.42);
         assert(json["object"]["string"].get_string() == "value");
 
@@ -242,7 +242,7 @@ int main() {
         std::printf("fallback: ");
         JSON json;
         assert(json.get_bool(true) == true);
-        assert(json.get_long(-69) == -69);
+        assert(json.get_int64(-69) == -69);
         assert(json.get_double(-1.42) == -1.42);
         assert(json.get_string("value") == "value");
         std::printf("success\n");
