@@ -49,7 +49,7 @@ class JSON {
     static JSON array(const std::vector<JSON>& array = {});
     static JSON object(const std::map<std::string, JSON>& object = {});
 
-    JSON(const nullptr_t = nullptr);
+    JSON(const std::nullptr_t = nullptr);
     JSON(bool value);
     JSON(int value);
     JSON(int64_t value);
