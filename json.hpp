@@ -52,7 +52,7 @@ class JSON {
     JSON(const std::nullptr_t = nullptr);
     JSON(bool value);
     JSON(int value);
-    JSON(int64_t value);
+    JSON(std::int64_t value);
     JSON(float value);
     JSON(double value);
     JSON(const char* value);
@@ -76,16 +76,16 @@ class JSON {
     bool is_object() const;
 
     bool get_bool(bool fallback = {}) const;
-    int64_t get_int64(int64_t fallback = {}) const;
+    std::int64_t get_int64(std::int64_t fallback = {}) const;
     double get_double(double fallback = {}) const;
     std::string& get_string(const std::string& fallback = {});
     std::vector<JSON>& get_array(const std::vector<JSON>& fallback = {});
     std::map<std::string, JSON>& get_object(const std::map<std::string, JSON>& fallback = {});
 
-    JSON& operator[](size_t idx);
+    JSON& operator[](std::size_t idx);
     JSON& operator[](const std::string& key);
 
-    size_t size() const;
+    std::size_t size() const;
     bool empty() const;
     bool has(const std::string& key) const;
 
@@ -99,13 +99,13 @@ class JSON {
     void init_array();
     void init_object();
 
-    Status decode(const char*& start, const char* end, int ctx, size_t depth);
+    Status decode(const char*& start, const char* end, int ctx, std::size_t depth);
     void encode(std::string& dst, bool pretty, int indent) const;
 
     Type type_;
     union {
         bool as_bool_;
-        int64_t as_int64_;
+        std::int64_t as_int64_;
         double as_double_;
         std::string as_string_;
         std::vector<JSON> as_array_;
@@ -196,7 +196,7 @@ JSON JSON::object(const std::map<std::string, JSON>& object) {
 JSON::JSON(const std::nullptr_t) : type_{TYPE_NULL} {}
 JSON::JSON(bool value) : type_{TYPE_BOOL}, as_bool_{value} {}
 JSON::JSON(int value) : type_{TYPE_INT64}, as_int64_{value} {}
-JSON::JSON(int64_t value) : type_{TYPE_INT64}, as_int64_{value} {}
+JSON::JSON(std::int64_t value) : type_{TYPE_INT64}, as_int64_{value} {}
 JSON::JSON(float value) : type_{TYPE_DOUBLE}, as_double_{value} {}
 JSON::JSON(double value) : type_{TYPE_DOUBLE}, as_double_{value} {}
 JSON::JSON(const char* value) : type_{TYPE_STRING}, as_string_{value} {}
@@ -373,7 +373,7 @@ bool JSON::get_bool(bool fallback) const {
     }
 }
 
-int64_t JSON::get_int64(int64_t fallback) const {
+std::int64_t JSON::get_int64(std::int64_t fallback) const {
     switch (type_) {
         case TYPE_INT64:
             return as_int64_;
@@ -422,7 +422,7 @@ std::map<std::string, JSON>& JSON::get_object(const std::map<std::string, JSON>&
     return as_object_;
 }
 
-JSON& JSON::operator[](size_t idx) {
+JSON& JSON::operator[](std::size_t idx) {
     if (type_ != TYPE_ARRAY)
         init_array();
     if (idx >= as_array_.size())
@@ -436,7 +436,7 @@ JSON& JSON::operator[](const std::string& key) {
     return as_object_[key];
 }
 
-size_t JSON::size() const {
+std::size_t JSON::size() const {
     switch (type_) {
         case TYPE_STRING:
             return as_string_.size();
@@ -516,7 +516,7 @@ void JSON::init_object() {
     new (&as_object_) std::map<std::string, JSON>{};
 }
 
-JSON::Status JSON::decode(const char*& start, const char* end, int ctx, size_t depth) {
+JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::size_t depth) {
     assert(start <= end);
 
     if (depth > JSON_MAX_DEPTH)
