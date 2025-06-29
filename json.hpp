@@ -3,7 +3,6 @@
 #define JSON_HPP
 
 #include <cstddef>
-#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
@@ -13,8 +12,7 @@ class JSON {
     enum Type {
         TYPE_NULL,
         TYPE_BOOL,
-        TYPE_INT64,
-        TYPE_DOUBLE,
+        TYPE_NUMBER,
         TYPE_STRING,
         TYPE_ARRAY,
         TYPE_OBJECT,
@@ -52,7 +50,6 @@ class JSON {
     JSON(const std::nullptr_t = nullptr);
     JSON(bool value);
     JSON(int value);
-    JSON(std::int64_t value);
     JSON(float value);
     JSON(double value);
     JSON(const char* value);
@@ -69,15 +66,13 @@ class JSON {
 
     bool is_null() const;
     bool is_bool() const;
-    bool is_int64() const;
-    bool is_double() const;
+    bool is_number() const;
     bool is_string() const;
     bool is_array() const;
     bool is_object() const;
 
     bool get_bool(bool fallback = {}) const;
-    std::int64_t get_int64(std::int64_t fallback = {}) const;
-    double get_double(double fallback = {}) const;
+    double get_number(double fallback = {}) const;
     std::string& get_string(const std::string& fallback = {});
     std::vector<JSON>& get_array(const std::vector<JSON>& fallback = {});
     std::map<std::string, JSON>& get_object(const std::map<std::string, JSON>& fallback = {});
@@ -105,8 +100,7 @@ class JSON {
     Type type_;
     union {
         bool as_bool_;
-        std::int64_t as_int64_;
-        double as_double_;
+        double as_number_;
         std::string as_string_;
         std::vector<JSON> as_array_;
         std::map<std::string, JSON> as_object_;
@@ -195,10 +189,9 @@ JSON JSON::object(const std::map<std::string, JSON>& object) {
 
 JSON::JSON(const std::nullptr_t) : type_{TYPE_NULL} {}
 JSON::JSON(bool value) : type_{TYPE_BOOL}, as_bool_{value} {}
-JSON::JSON(int value) : type_{TYPE_INT64}, as_int64_{value} {}
-JSON::JSON(std::int64_t value) : type_{TYPE_INT64}, as_int64_{value} {}
-JSON::JSON(float value) : type_{TYPE_DOUBLE}, as_double_{value} {}
-JSON::JSON(double value) : type_{TYPE_DOUBLE}, as_double_{value} {}
+JSON::JSON(int value) : type_{TYPE_NUMBER}, as_number_{static_cast<double>(value)} {}
+JSON::JSON(float value) : type_{TYPE_NUMBER}, as_number_{value} {}
+JSON::JSON(double value) : type_{TYPE_NUMBER}, as_number_{value} {}
 JSON::JSON(const char* value) : type_{TYPE_STRING}, as_string_{value} {}
 JSON::JSON(std::string&& value) : type_{TYPE_STRING}, as_string_{std::move(value)} {}
 JSON::JSON(const std::string& value) : type_{TYPE_STRING}, as_string_{std::move(value)} {}
@@ -214,11 +207,8 @@ JSON::JSON(const JSON& other) : type_{other.type_} {
         case TYPE_BOOL: {
             as_bool_ = other.as_bool_;
         } break;
-        case TYPE_INT64: {
-            as_int64_ = other.as_int64_;
-        } break;
-        case TYPE_DOUBLE: {
-            as_double_ = other.as_double_;
+        case TYPE_NUMBER: {
+            as_number_ = other.as_number_;
         } break;
         case TYPE_STRING: {
             new (&as_string_) std::string{other.as_string_};
@@ -245,11 +235,8 @@ JSON& JSON::operator=(const JSON& other) {
             case TYPE_BOOL: {
                 as_bool_ = other.as_bool_;
             } break;
-            case TYPE_INT64: {
-                as_int64_ = other.as_int64_;
-            } break;
-            case TYPE_DOUBLE: {
-                as_double_ = other.as_double_;
+            case TYPE_NUMBER: {
+                as_number_ = other.as_number_;
             } break;
             case TYPE_STRING: {
                 new (&as_string_) std::string{other.as_string_};
@@ -277,11 +264,8 @@ JSON::JSON(JSON&& other) noexcept : type_{other.type_} {
         case TYPE_BOOL: {
             as_bool_ = other.as_bool_;
         } break;
-        case TYPE_INT64: {
-            as_int64_ = other.as_int64_;
-        } break;
-        case TYPE_DOUBLE: {
-            as_double_ = other.as_double_;
+        case TYPE_NUMBER: {
+            as_number_ = other.as_number_;
         } break;
         case TYPE_STRING: {
             new (&as_string_) std::string{std::move(other.as_string_)};
@@ -309,11 +293,8 @@ JSON& JSON::operator=(JSON&& other) noexcept {
             case TYPE_BOOL: {
                 as_bool_ = other.as_bool_;
             } break;
-            case TYPE_INT64: {
-                as_int64_ = other.as_int64_;
-            } break;
-            case TYPE_DOUBLE: {
-                as_double_ = other.as_double_;
+            case TYPE_NUMBER: {
+                as_number_ = other.as_number_;
             } break;
             case TYPE_STRING: {
                 new (&as_string_) std::string{std::move(other.as_string_)};
@@ -344,12 +325,8 @@ bool JSON::is_bool() const {
     return type_ == TYPE_BOOL;
 }
 
-bool JSON::is_int64() const {
-    return type_ == TYPE_INT64;
-}
-
-bool JSON::is_double() const {
-    return type_ == TYPE_DOUBLE;
+bool JSON::is_number() const {
+    return type_ == TYPE_NUMBER;
 }
 
 bool JSON::is_string() const {
@@ -373,23 +350,10 @@ bool JSON::get_bool(bool fallback) const {
     }
 }
 
-std::int64_t JSON::get_int64(std::int64_t fallback) const {
+double JSON::get_number(double fallback) const {
     switch (type_) {
-        case TYPE_INT64:
-            return as_int64_;
-        case TYPE_DOUBLE:
-            return as_double_;
-        default:
-            return fallback;
-    }
-}
-
-double JSON::get_double(double fallback) const {
-    switch (type_) {
-        case TYPE_INT64:
-            return as_int64_;
-        case TYPE_DOUBLE:
-            return as_double_;
+        case TYPE_NUMBER:
+            return as_number_;
         default:
             return fallback;
     }
@@ -623,6 +587,47 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
 #endif  // JSON_STRICT
             } break;
 
+            case 'n': {  // null
+#ifdef JSON_STRICT
+                if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
+                    return UNEXPECTED_TOKEN;
+                if (std::strncmp(start, "ull", 3) != 0)
+                    return INVALID_TOKEN;
+#endif  // JSON_STRICT
+                start += 3;
+                start = start < end ? start : end;
+                type_ = TYPE_NULL;
+                return SUCCESS;
+            } break;
+
+            case 't': {  // true
+#ifdef JSON_STRICT
+                if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
+                    return UNEXPECTED_TOKEN;
+                if (std::strncmp(start, "rue", 3) != 0)
+                    return INVALID_TOKEN;
+#endif  // JSON_STRICT
+                start += 3;
+                start = start < end ? start : end;
+                type_ = TYPE_BOOL;
+                as_bool_ = true;
+                return SUCCESS;
+            } break;
+
+            case 'f': {  // false
+#ifdef JSON_STRICT
+                if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
+                    return UNEXPECTED_TOKEN;
+                if (std::strncmp(start, "alse", 4) != 0)
+                    return INVALID_TOKEN;
+#endif  // JSON_STRICT
+                start += 4;
+                start = start < end ? start : end;
+                type_ = TYPE_BOOL;
+                as_bool_ = false;
+                return SUCCESS;
+            } break;
+
             case '"': {  // string
 #ifdef JSON_STRICT
                 if (ctx & (CTX_COLON | CTX_COMMA))
@@ -667,47 +672,6 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 return UNEXPECTED_STRING_END;
             } break;
 
-            case 't': {  // true
-#ifdef JSON_STRICT
-                if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
-                    return UNEXPECTED_TOKEN;
-                if (std::strncmp(start, "rue", 3) != 0)
-                    return INVALID_TOKEN;
-#endif  // JSON_STRICT
-                start += 3;
-                start = start < end ? start : end;
-                type_ = TYPE_BOOL;
-                as_bool_ = true;
-                return SUCCESS;
-            } break;
-
-            case 'f': {  // false
-#ifdef JSON_STRICT
-                if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
-                    return UNEXPECTED_TOKEN;
-                if (std::strncmp(start, "alse", 4) != 0)
-                    return INVALID_TOKEN;
-#endif  // JSON_STRICT
-                start += 4;
-                start = start < end ? start : end;
-                type_ = TYPE_BOOL;
-                as_bool_ = false;
-                return SUCCESS;
-            } break;
-
-            case 'n': {  // null
-#ifdef JSON_STRICT
-                if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
-                    return UNEXPECTED_TOKEN;
-                if (std::strncmp(start, "ull", 3) != 0)
-                    return INVALID_TOKEN;
-#endif  // JSON_STRICT
-                start += 3;
-                start = start < end ? start : end;
-                type_ = TYPE_NULL;
-                return SUCCESS;
-            } break;
-
             case '-': {  // negative
 #ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
@@ -727,12 +691,12 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
 #endif  // JSON_STRICT
                 if (*start == '.' || *start == 'e' || *start == 'E')
                     goto decode_double;
-                type_ = TYPE_INT64;
-                as_int64_ = 0;
+                type_ = TYPE_NUMBER;
+                as_number_ = 0;
                 return SUCCESS;
             } break;
 
-            case '1':  // int64
+            case '1':  // double
             case '2':
             case '3':
             case '4':
@@ -740,36 +704,15 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
             case '6':
             case '7':
             case '8':
-            case '9': {
-#ifdef JSON_STRICT
-                if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
-                    return UNEXPECTED_NUMBER;
-#endif  // JSON_STRICT
-                for (const char* c = start; c < end; ++c) {
-                    if (*c == '.' || *c == 'e' || *c == 'E')
-                        goto decode_double;
-                    if (!std::isdigit(*c))
-                        break;
-                }
-                char* end;
-                type_ = TYPE_INT64;
-                as_int64_ = std::strtoll(start - 1, &end, 10) * sign;
-#ifdef JSON_STRICT
-                if (end == start - 1)
-                    return INVALID_NUMBER;
-#endif  // JSON_STRICT
-                start = end;
-                return SUCCESS;
-            } break;
-
-            decode_double: {  // double
+            case '9':
+            decode_double: {
 #ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_NUMBER;
 #endif  // JSON_STRICT
                 char* end;
-                type_ = TYPE_DOUBLE;
-                as_double_ = std::strtod(start - 1, &end) * sign;
+                type_ = TYPE_NUMBER;
+                as_number_ = std::strtod(start - 1, &end) * sign;
 #ifdef JSON_STRICT
                 if (end == start - 1)
                     return INVALID_NUMBER;
@@ -798,14 +741,9 @@ void JSON::encode(std::string& dst, bool pretty, int indent) const {
         case TYPE_BOOL: {
             dst += as_bool_ ? "true" : "false";
         } break;
-        case TYPE_INT64: {
-            char buf[64];
-            std::to_chars_result result = std::to_chars(buf, buf + sizeof(buf), as_int64_);
-            dst.append(buf, result.ptr);
-        } break;
-        case TYPE_DOUBLE: {
+        case TYPE_NUMBER: {
             char buf[128];
-            std::to_chars_result result = std::to_chars(buf, buf + sizeof(buf), as_double_);
+            std::to_chars_result result = std::to_chars(buf, buf + sizeof(buf), as_number_);
             dst.append(buf, result.ptr);
         } break;
         case TYPE_STRING: {
