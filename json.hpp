@@ -204,21 +204,21 @@ JSON::JSON(const JSON& other) : type_{other.type_} {
     switch (type_) {
         case TYPE_NULL:
             break;
-        case TYPE_BOOL: {
+        case TYPE_BOOL:
             as_bool_ = other.as_bool_;
-        } break;
-        case TYPE_NUMBER: {
+            break;
+        case TYPE_NUMBER:
             as_number_ = other.as_number_;
-        } break;
-        case TYPE_STRING: {
+            break;
+        case TYPE_STRING:
             new (&as_string_) std::string{other.as_string_};
-        } break;
-        case TYPE_ARRAY: {
+            break;
+        case TYPE_ARRAY:
             new (&as_array_) std::vector{other.as_array_};
-        } break;
-        case TYPE_OBJECT: {
+            break;
+        case TYPE_OBJECT:
             new (&as_object_) std::map{other.as_object_};
-        } break;
+            break;
         default:
             assert(false);
     }
@@ -232,21 +232,21 @@ JSON& JSON::operator=(const JSON& other) {
         switch (type_) {
             case TYPE_NULL:
                 break;
-            case TYPE_BOOL: {
+            case TYPE_BOOL:
                 as_bool_ = other.as_bool_;
-            } break;
-            case TYPE_NUMBER: {
+                break;
+            case TYPE_NUMBER:
                 as_number_ = other.as_number_;
-            } break;
-            case TYPE_STRING: {
+                break;
+            case TYPE_STRING:
                 new (&as_string_) std::string{other.as_string_};
-            } break;
-            case TYPE_ARRAY: {
+                break;
+            case TYPE_ARRAY:
                 new (&as_array_) std::vector{other.as_array_};
-            } break;
-            case TYPE_OBJECT: {
+                break;
+            case TYPE_OBJECT:
                 new (&as_object_) std::map{other.as_object_};
-            } break;
+                break;
             default:
                 assert(false);
         }
@@ -261,21 +261,21 @@ JSON::JSON(JSON&& other) noexcept : type_{other.type_} {
     switch (type_) {
         case TYPE_NULL:
             break;
-        case TYPE_BOOL: {
+        case TYPE_BOOL:
             as_bool_ = other.as_bool_;
-        } break;
-        case TYPE_NUMBER: {
+            break;
+        case TYPE_NUMBER:
             as_number_ = other.as_number_;
-        } break;
-        case TYPE_STRING: {
+            break;
+        case TYPE_STRING:
             new (&as_string_) std::string{std::move(other.as_string_)};
-        } break;
-        case TYPE_ARRAY: {
+            break;
+        case TYPE_ARRAY:
             new (&as_array_) std::vector{std::move(other.as_array_)};
-        } break;
-        case TYPE_OBJECT: {
+            break;
+        case TYPE_OBJECT:
             new (&as_object_) std::map{std::move(other.as_object_)};
-        } break;
+            break;
         default:
             assert(false);
     }
@@ -290,21 +290,21 @@ JSON& JSON::operator=(JSON&& other) noexcept {
         switch (type_) {
             case TYPE_NULL:
                 break;
-            case TYPE_BOOL: {
+            case TYPE_BOOL:
                 as_bool_ = other.as_bool_;
-            } break;
-            case TYPE_NUMBER: {
+                break;
+            case TYPE_NUMBER:
                 as_number_ = other.as_number_;
-            } break;
-            case TYPE_STRING: {
+                break;
+            case TYPE_STRING:
                 new (&as_string_) std::string{std::move(other.as_string_)};
-            } break;
-            case TYPE_ARRAY: {
+                break;
+            case TYPE_ARRAY:
                 new (&as_array_) std::vector{std::move(other.as_array_)};
-            } break;
-            case TYPE_OBJECT: {
+                break;
+            case TYPE_OBJECT:
                 new (&as_object_) std::map{std::move(other.as_object_)};
-            } break;
+                break;
             default:
                 assert(false);
         }
@@ -425,15 +425,15 @@ bool JSON::has(const std::string& key) const {
 
 void JSON::clear() {
     switch (type_) {
-        case TYPE_STRING: {
+        case TYPE_STRING:
             as_string_.~basic_string();
-        } break;
-        case TYPE_ARRAY: {
+            break;
+        case TYPE_ARRAY:
             as_array_.~vector();
-        } break;
-        case TYPE_OBJECT: {
+            break;
+        case TYPE_OBJECT:
             as_object_.~map();
-        } break;
+            break;
         default:
             break;
     }
@@ -503,14 +503,14 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
             case '\t':
                 break;
 
-            case '/': {  // comment
+            case '/':  // comment
 #ifdef JSON_STRICT
                 if (*start++ != '/')
                     return INVALID_TOKEN;
 #endif  // JSON_STRICT
                 while (start < end && *start++ != '\n')
                     ;
-            } break;
+                break;
 
             case '{': {  // object
 #ifdef JSON_STRICT
@@ -534,7 +534,7 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                     as_object_.emplace(std::move(key.as_string_), std::move(value));
                     ctx = CTX_OBJECT | CTX_KEY | CTX_COMMA;
                 }
-            } break;
+            }
             case '}':
 #ifdef JSON_STRICT
                 if (ctx & CTX_OBJECT)
@@ -561,7 +561,7 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                     as_array_.emplace_back(std::move(value));
                     ctx = CTX_ARRAY | CTX_COMMA;
                 }
-            } break;
+            }
             case ']':
 #ifdef JSON_STRICT
                 if (ctx & CTX_ARRAY)
@@ -571,23 +571,23 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 return END;
 #endif  // JSON_STRICT
 
-            case ',': {  // array or object
+            case ',':  // array or object
 #ifdef JSON_STRICT
                 if ((ctx & CTX_COMMA) == 0)
                     return UNEXPECTED_COMMA;
                 ctx &= ~CTX_COMMA;
 #endif  // JSON_STRICT
-            } break;
+                break;
 
-            case ':': {  // object
+            case ':':  // object
 #ifdef JSON_STRICT
                 if ((ctx & CTX_COLON) == 0)
                     return UNEXPECTED_COLON;
                 ctx &= ~CTX_COLON;
 #endif  // JSON_STRICT
-            } break;
+                break;
 
-            case 'n': {  // null
+            case 'n':  // null
 #ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_TOKEN;
@@ -598,9 +598,8 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 start = start < end ? start : end;
                 type_ = TYPE_NULL;
                 return SUCCESS;
-            } break;
 
-            case 't': {  // true
+            case 't':  // true
 #ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_TOKEN;
@@ -612,9 +611,8 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 type_ = TYPE_BOOL;
                 as_bool_ = true;
                 return SUCCESS;
-            } break;
 
-            case 'f': {  // false
+            case 'f':  // false
 #ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_TOKEN;
@@ -626,9 +624,8 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 type_ = TYPE_BOOL;
                 as_bool_ = false;
                 return SUCCESS;
-            } break;
 
-            case '"': {  // string
+            case '"':  // string
 #ifdef JSON_STRICT
                 if (ctx & (CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_STRING;
@@ -670,9 +667,8 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                     }
                 }
                 return UNEXPECTED_STRING_END;
-            } break;
 
-            case '-': {  // negative
+            case '-':  // negative
 #ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_TOKEN;
@@ -680,9 +676,9 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                     return UNEXPECTED_TOKEN;
 #endif  // JSON_STRICT
                 sign = -1;
-            } break;
+                break;
 
-            case '0': {  // zero or double
+            case '0':  // zero or double
 #ifdef JSON_STRICT
                 if (ctx & (CTX_KEY | CTX_COLON | CTX_COMMA))
                     return UNEXPECTED_NUMBER;
@@ -694,7 +690,6 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 type_ = TYPE_NUMBER;
                 as_number_ = 0;
                 return SUCCESS;
-            } break;
 
             case '1':  // double
             case '2':
@@ -719,7 +714,7 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
 #endif  // JSON_STRICT
                 start = end;
                 return SUCCESS;
-            } break;
+            }
 
             default:
                 return INVALID_TOKEN;
@@ -735,20 +730,20 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
 
 void JSON::encode(std::string& dst, bool pretty, int indent) const {
     switch (type_) {
-        case TYPE_NULL: {
+        case TYPE_NULL:
             dst += "null";
-        } break;
-        case TYPE_BOOL: {
+            break;
+        case TYPE_BOOL:
             dst += as_bool_ ? "true" : "false";
-        } break;
+            break;
         case TYPE_NUMBER: {
             char buf[128];
             std::to_chars_result result = std::to_chars(buf, buf + sizeof(buf), as_number_);
             dst.append(buf, result.ptr);
         } break;
-        case TYPE_STRING: {
+        case TYPE_STRING:
             string_escape(dst, as_string_);
-        } break;
+            break;
         case TYPE_ARRAY: {
             dst += pretty ? "[\n" : "[";
             for (auto it = as_array_.begin(); it != as_array_.end(); ++it) {
@@ -800,33 +795,33 @@ static void string_escape(std::string& dst, const std::string& src) {
     dst += "\"";
     for (char c : src) {
         switch (c) {
-            case '"': {
+            case '"':
                 dst += "\\\"";
-            } break;
-            case '\\': {
+                break;
+            case '\\':
                 dst += "\\\\";
-            } break;
-            case '/': {
+                break;
+            case '/':
                 dst += "\\/";
-            } break;
-            case '\b': {
+                break;
+            case '\b':
                 dst += "\\b";
-            } break;
-            case '\f': {
+                break;
+            case '\f':
                 dst += "\\f";
-            } break;
-            case '\n': {
+                break;
+            case '\n':
                 dst += "\\n";
-            } break;
-            case '\r': {
+                break;
+            case '\r':
                 dst += "\\r";
-            } break;
-            case '\t': {
+                break;
+            case '\t':
                 dst += "\\t";
-            } break;
-            default: {
+                break;
+            default:
                 dst += c;
-            } break;
+                break;
         }
     }
     dst += "\"";
