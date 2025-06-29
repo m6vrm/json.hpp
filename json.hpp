@@ -508,8 +508,8 @@ JSON::Status JSON::decode(const char*& start, const char* end, int ctx, std::siz
                 if (*start++ != '/')
                     return INVALID_TOKEN;
 #endif  // JSON_STRICT
-                while (*start != '\n' && start < end)
-                    ++start;
+                while (start < end && *start++ != '\n')
+                    ;
             } break;
 
             case '{': {  // object
