@@ -12,22 +12,25 @@ jobs:
       matrix:
         os:
         - name: ubuntu-latest
-          cxx: c++
+          compiler: c++
+          sanitize: -g3 -fsanitize=address,undefined
         - name: macos-latest
-          cxx: c++
+          compiler: c++
+          sanitize: -g3 -fsanitize=address,undefined
         - name: windows-latest
-          cxx: clang++
+          compiler: clang++
           define: -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
         build:
         - jsontestsuite_test
         - json_test
         - example
+
     runs-on: ${{ matrix.os.name }}
     steps:
     - uses: actions/checkout@v4
     - name: build
       shell: bash
-      run: ${{ matrix.os.cxx }} -o ${{ matrix.build }} ${{ matrix.build }}.cpp -std=c++20 -Wall -Wextra -Wpedantic -g3 -fsanitize=address,undefined ${{ matrix.os.define }}
+      run: ${{ matrix.os.compiler }} -o ${{ matrix.build }} ${{ matrix.build }}.cpp -std=c++20 -Wall -Wextra -Wpedantic ${{ matrix.os.sanitize }} ${{ matrix.os.define }}
     - name: run
       shell: bash
       run: ./${{ matrix.build }}
